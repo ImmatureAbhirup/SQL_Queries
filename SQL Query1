@@ -1,5 +1,16 @@
 Sample Input:
 
+Team_1	Team_2	Winner
+India	SL	India
+SL	Aus	Aus
+SA	Eng	Eng
+Eng	NZ	NZ
+Aus	India	India
+
+We need to find out Number of teams, Total Matches Played, Number of wins & losses.
+
+Sample Output
+
 Team	Matches_Played	Wins	Loss
 India	2	2	0
 NZ	1	1	0
@@ -8,3 +19,35 @@ Eng	2	1	1
 SA	1	0	1
 SL	2	0	2
 
+Query 1:
+
+--With Temp Table
+with temp_table as
+(select team_1 as Team from icc_world_cup
+union all
+select team_2 as Team from icc_world_cup
+
+),
+match_played as (
+select team, count(team) as 'Matches_Played' from temp_table
+group by team)
+
+select Team, Matches_Played, count(i.Winner) as 'Wins', Matches_Played-count(i.Winner) as 'Loss'
+from match_played a
+left join icc_world_cup i
+on a.Team = i.Winner
+group by a.Team,a.Matches_Played
+order by count(i.Winner) desc
+
+
+Query 2:
+
+--With Case Statement
+
+select Team_Name, count(1) as 'Total_Played', sum(Wins) as 'Wins', count(1)-sum(Wins) as 'Total_Losses' from(
+select Team_1 as 'Team_Name' , case when Team_1 = Winner then 1 else 0 end as 'Wins' from icc_world_cup
+union all 
+select Team_2 as 'Team_Name' , case when Team_2 = Winner then 1 else 0 end as 'Wins' from icc_world_cup
+)
+a
+group by Team_Name
