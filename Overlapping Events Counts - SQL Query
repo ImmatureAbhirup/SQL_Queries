@@ -1,0 +1,33 @@
+Input Table:
+
+hall_id	from_date	to_date
+1	2025-01-05	2025-01-09
+1	2025-01-06	2025-01-10
+1	2025-01-07	2025-01-10
+1	2025-01-11	2025-01-15
+2	2025-02-15	2025-02-19
+2	2025-02-16	2025-02-20
+2	2025-02-21	2025-02-25
+
+Output Table:
+hall_id	from_date	to_date	count of events
+1	2025-01-05	2025-01-10	3
+1	2025-01-11	2025-01-15	1
+2	2025-02-15	2025-02-20	2
+2	2025-02-21	2025-02-25	1
+
+
+Query:
+
+with cte_ as(
+select *, lag(to_date,1,to_date) over(partition by hall_id order by to_date) as'next_date' from events),
+
+update_cte as (
+select *, case when next_date>=from_date and  next_date<=to_date then 'T' else 'F' end as 'cate_'
+from cte_
+)
+
+select hall_id, min(from_date) as 'from_date' , max(to_date) as 'to_date', count(hall_id) as 'count of events'
+from update_cte
+group by hall_id,cate_
+order by hall_id asc, from_date asc
